@@ -49,7 +49,7 @@ gem 'devise-bootstrap-views'
 # API
 gem 'grape'
 gem 'grape-entity'
-gem 'grape-kaminari'
+#gem 'grape-kaminari'
 #gem 'rack-cors'
 
 gem 'grape-swagger'
