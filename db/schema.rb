@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171006141412) do
+ActiveRecord::Schema.define(version: 20171009165101) do
+
+  create_table "charges", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "stripe_charge_id"
+    t.integer "amount"
+    t.string "currency"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "subscriptions", force: :cascade do |t|
     t.integer "user_id"
@@ -38,6 +47,7 @@ ActiveRecord::Schema.define(version: 20171006141412) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_customer_id"
+    t.string "stripe_card_id"
     t.boolean "subscribed", default: false
     t.datetime "subscribed_at"
     t.index ["email"], name: "index_users_on_email", unique: true

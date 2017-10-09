@@ -2,6 +2,8 @@ module Sample::Entities
 
   class Base < Grape::Entity
     expose :id, documentation: {type: Integer, desc: "Object ID"}
+    expose :created_at
+    expose :updated_at
   end
 
   class Meta < Grape::Entity
@@ -11,10 +13,11 @@ module Sample::Entities
     expose :records_yielded_count
   end
 
-  class User < Grape::Entity
+  class User < Base
     expose :subscribed
     expose :subscribed_at
     expose :stripe_customer_id
+    expose :stripe_card_id
   end
 
   class Subscription < Base
@@ -24,7 +27,14 @@ module Sample::Entities
     expose :interval
     expose :interval_count
     expose :stripe_status
-    expose :user, :using => Sample::Entities::User
+    expose :user, using: Sample::Entities::User
+  end
+
+  class Charge < Base
+    expose :amount
+    expose :currency
+    expose :stripe_charge_id
+    expose :user, using: Sample::Entities::User
   end
 
 end

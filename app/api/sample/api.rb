@@ -51,6 +51,7 @@ class Sample::API < Grape::API
   end
 
   mount Subscriptions
+  mount Charges
 
   add_swagger_documentation base_path: "/",
                             api_version: 'v1',

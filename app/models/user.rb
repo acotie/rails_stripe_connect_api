@@ -5,6 +5,7 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable
 
   has_one :subscription
+  has_many :charges
 
   #############################################
   ##### Start Connection Stripe Objects #######
@@ -28,7 +29,7 @@ class User < ApplicationRecord
 #  end
 
   # stripe subscription_id
-  # return string  e.g. "sub_96lUmykFOcUUMH"
+  # return string  e.g. "sub_95lUmykFOcUUMH"
   def subscription_id
     customer.subscriptions.first.id
   end

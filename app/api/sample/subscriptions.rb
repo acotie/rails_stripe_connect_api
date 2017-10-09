@@ -80,6 +80,8 @@ class Sample::Subscriptions < Grape::API
       error!('already subscription', 400) if current_user.subscribed?
 
       customer = current_user.customer
+      card     = current_user.card
+
       customer.plan = params[:plan_id]
       customer.save
 
@@ -129,7 +131,7 @@ class Sample::Subscriptions < Grape::API
       present :subscription, current_user.subscription, with: Sample::Entities::Subscription, user: current_user
     end
 
-    desc "update card (カード変更)"
+    desc "update card (カード変更) old API"
     params do
       requires :card, type: Hash do
         requires :number, type: String, desc: "card number"
@@ -139,7 +141,7 @@ class Sample::Subscriptions < Grape::API
         #optional :name, type: String, desc: "card holders full name", default:nil
       end
     end
-    put '/edit-card' do
+    put '/update-card-old' do
       error!('not subscription', 400) if !current_user.subscribed?
 
       customer    = current_user.customer
@@ -157,6 +159,31 @@ class Sample::Subscriptions < Grape::API
       #present current_user.credit_card, with: Sample::Entities::CreditCard, user: current_user
     end
 
+    desc "update card (カード変更) new"
+    params do
+      requires :card, type: Hash do
+        requires :number, type: String, desc: "card number"
+        requires :exp_month, type: Integer, desc: "card exp_month"
+        requires :exp_year, type: Integer, desc: "card exp_year"
+        requires :cvc, type: String, desc: "card cvc"
+        #optional :name, type: String, desc: "card holders full name", default:nil
+      end
+    end
+    put '/update-card' do
+      error!('not subscription', 400) if !current_user.subscribed?
+
+      card = current_user.card
+      card.number    =  params[:card][:number],
+      card.exp_month =  params[:card][:exp_month],
+      card.exp_year  =  params[:card][:exp_year],
+      card.cvc =  params[:card][:cvc]
+      card.save
+      # update credit card
+      #current_user.save_credit_card(customer.sources.first)
+
+      #present current_user.credit_card, with: Sample::Entities::CreditCard, user: current_user
+      card
+    end
 
     desc "delete subscription"
     delete do
