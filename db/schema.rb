@@ -10,7 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171006140822) do
+ActiveRecord::Schema.define(version: 20171006141412) do
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "amount", null: false
+    t.string "stripe_subscription_id", null: false
+    t.string "stripe_plan_id"
+    t.string "interval"
+    t.integer "interval_count"
+    t.string "stripe_status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
