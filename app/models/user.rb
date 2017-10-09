@@ -18,8 +18,14 @@ class User < ApplicationRecord
   # stripe card_id
   # return string  e.g. "card_18oXxZJgEbT6Ft4J0QBohKDi"
   def card_id
-    customer.sources.first.id
+    card.id
   end
+
+  # stripe card_id
+  # return string  e.g. "card_18oXxZJgEbT6Ft4J0QBohKDi"
+#  def card_id
+#    customer.sources.first.id
+#  end
 
   # stripe subscription_id
   # return string  e.g. "sub_96lUmykFOcUUMH"
@@ -53,10 +59,10 @@ class User < ApplicationRecord
     end
   end
 
-  # TODO
+  # TODO Research STRIPE updated new API (create & update card)
   def card
-    if customer.sources.all(:object => "card").present?
-      customer.sources.all(:object => "card")
+    if self.stripe_card_id.present?
+      customer.sources.retrieve(self.stripe_card_id)
     else
       create_card
     end
@@ -74,20 +80,17 @@ class User < ApplicationRecord
       email:       self.email,
       description: "Customer for #{self.email}",
     )
-    create_card
     self.stripe_customer_id = customer.id
     self.save
     customer
   end
 
-  # TODO move credit_card DB
+  # TODO Research STRIPE updated new API (create & update card)
   def create_card
-    if customer.sources.all(:object => "card").present?
-      customer.sources.all(:object => "card")
-    else
-      customer.surces.create(source: "tok_amex")
-      customer.save
-    end
+      card = customer.sources.create(source: "tok_amex")
+      self.stripe_card_id = card.id
+      self.save
+      card
   end
   
 end

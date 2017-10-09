@@ -11,7 +11,7 @@ class Sample::Subscriptions < Grape::API
   resource "subscriptions" do
 
     # TODO: test
-    desc "return a Latest Subscription"
+    desc "return all Subscription"
     get '/all' do
       result = Subscription.all
       present :subscription, result, with: Sample::Entities::Subscription, user: current_user
@@ -28,7 +28,7 @@ class Sample::Subscriptions < Grape::API
       result = Stripe::Plan.all
     end
 
-    desc "create new Subscription"
+    desc "create new Subscription (old: Add subscription with credit-card)"
     params do
       requires :plan_id, type: String, desc: "stripe plan_id (text)"
       requires :card, type: Hash do
@@ -39,7 +39,7 @@ class Sample::Subscriptions < Grape::API
         #optional :name, type: String, desc: "card holders full name", default:nil
       end
     end
-    post do
+    post '/old' do
       error!('already subscription', 400) if current_user.subscribed?
 
       customer = current_user.customer
@@ -51,6 +51,36 @@ class Sample::Subscriptions < Grape::API
         exp_year:  params[:card][:exp_year],
         cvc:       params[:card][:cvc]
       }
+      customer.save
+
+      # update credit card
+      #current_user.save_credit_card(customer.sources.first)
+
+      subscription = current_user.create_subscription({
+        stripe_subscription_id: customer.subscriptions.data[0].id,
+        stripe_plan_id:         customer.subscriptions.data[0].plan.id,
+        amount:                 customer.subscriptions.data[0].plan.amount,
+        interval:               customer.subscriptions.data[0].plan.interval,
+        interval_count:         customer.subscriptions.data[0].plan.interval_count,
+        stripe_status:          customer.subscriptions.data[0].status,
+      })
+      subscription.save
+
+      current_user.update_attributes(subscribed: true, subscribed_at: Time.now.utc)
+
+      # TODO create OK/NG response
+      present :subscription, subscription, with: Sample::Entities::Subscription, user: current_user
+    end
+    
+    desc "create new Subscription (new: only subscription)"
+    params do
+      requires :plan_id, type: String, desc: "stripe plan_id (text)"
+    end
+    post do
+      error!('already subscription', 400) if current_user.subscribed?
+
+      customer = current_user.customer
+      customer.plan = params[:plan_id]
       customer.save
 
       # update credit card
@@ -97,10 +127,9 @@ class Sample::Subscriptions < Grape::API
       current_user.update_attributes(subscribed: true, subscribed_at: Time.now.utc)
 
       present :subscription, current_user.subscription, with: Sample::Entities::Subscription, user: current_user
-
     end
 
-    desc "update subscription (カード変更)"
+    desc "update card (カード変更)"
     params do
       requires :card, type: Hash do
         requires :number, type: String, desc: "card number"
